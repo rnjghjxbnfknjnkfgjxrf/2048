@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+<?import gamepackage.game2048.Tile?>
+<?import javafx.scene.layout.GridPane?>
+<VBox alignment="CENTER" xmlns:fx="http://javafx.com/fxml"
+          fx:controller="gamepackage.game2048.HelloController">
+    <GridPane fx:id="grid" alignment="CENTER">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+
+        <Tile GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Tile GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <Tile GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Tile GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <Tile GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Tile GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Tile GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Tile GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Tile GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <Tile GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+        <Tile GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+        <Tile GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+        <Tile GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <Tile GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+        <Tile GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+        <Tile GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+    </GridPane>
+    <!--<Button text="heh" GridPane.rowIndex="4" onAction="#hehAction"/>
+    <Button text="hah" GridPane.rowIndex="5" onAction="#hahAction"/>
+    <Button text="reset" GridPane.rowIndex="6" onAction="#resetAction"/>-->
+</VBox>
