@@ -1,58 +1,32 @@
 package gamepackage.game2048;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
-import java.io.Console;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class HelloController implements Initializable {
-    @FXML
-    private Label welcomeText;
+public class GameController implements Initializable {
     @FXML
     private GridPane grid;
     private List<Tile> tiles;
-    @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
-    }
 
     @FXML
     private void hehAction(){
-        //Tile tile = (Tile) grid.getChildren().get(new Random().nextInt(16));
         Tile tile = (Tile) grid.getChildren().get(12);
         tile.setValue(2);
-    }
-    @FXML
-    private void hahAction(){
-        for (int i = 0; i < 4; i++){
-            for (int j = 1; j < 4; j++){
-                Tile tile = getTile(i,j);
-                if (tile.getValue() == 0) continue;
-                Tile leftTile = getLeft(tile);
-                if (leftTile == null) continue;
-                if (tile.getValue() == leftTile.getValue()){
-                    leftTile.doubleValue();
-                    tile.setValue(0);
-                }
-                else if(leftTile.getValue() == 0){
-                    leftTile.setValue(tile.getValue());
-                    tile.setValue(0);
-                }
-            }
-        }
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -67,6 +41,7 @@ public class HelloController implements Initializable {
                     tempTile.setX(GridPane.getRowIndex(tempTile));
                     tempTile.setY(GridPane.getColumnIndex(tempTile));
                 }
+                createNewTile(tiles);
             }
         });
         grid.setOnKeyPressed(event -> {
@@ -94,75 +69,24 @@ public class HelloController implements Initializable {
             tile.setValue(0);
             tile.setMerged(false);
         }
-    }
-    private Tile getTile(int x, int y){
-        return tiles.get(x+y*4);
-    }
-    private Tile getLeft(Tile tile){
-        Tile tempTile;
-        Tile leftTile = null;
-        for (int i = 1; i < tile.getY()+1; i++){
-            tempTile = tiles.get(tile.getPos() - i*4);
-            if (tempTile.getValue() == 0) leftTile = tempTile;
-            if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
-        }
-        return leftTile;
-    }
-    private Tile getUpper(Tile tile){
-        Tile tempTile;
-        Tile upperTile = null;
-        for (int i = 1; i < tile.getX() + 1; i++){
-            tempTile = tiles.get(tile.getPos() - i);
-            if (tempTile.getValue() == 0) upperTile = tempTile;
-            if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
-        }
-        return upperTile;
-    }
-    private Tile getLower(Tile tile){
-        Tile tempTile;
-        Tile lowerTile = null;
-        for (int i = 1; i < 4 - tile.getX(); i++){
-            tempTile = tiles.get(tile.getPos() + i);
-            if (tempTile.getValue() == 0) lowerTile = tempTile;
-            if (tempTile.getValue() == tile.getValue() && !tile.isTileMerged()) return tempTile;
-        }
-        return lowerTile;
-    }
-    private Tile getRight(Tile tile){
-        Tile tempTile;
-        Tile rightTile = null;
-        for (int i = 1; i < 4 -tile.getY(); i++){
-            tempTile = tiles.get(tile.getPos() + i*4);
-            /*if (tempTile.getValue() != 0 && tempTile.getValue() != tile.getValue()){
-                System.out.println("im here");
-                break;
-            }*/
-            if (tempTile.getValue() == 0) rightTile = tempTile;
-            if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
-        }
-        return rightTile;
-    }
-    private void merge(Tile first, Tile second){
-            first.doubleValue();
-            first.setMerged(true);
-            second.setValue(0);
-    }
-    private void move(Tile first, Tile second){
-        first.setValue(second.getValue());
-        second.setValue(0);
+        createNewTile(tiles);
     }
     private void makeTurn(KeyEvent event){
         boolean isAnyMoved = false;
         switch (event.getCode()){
+            case LEFT:
             case A:
                 isAnyMoved = leftTurn();
                 break;
+            case RIGHT:
             case D:
                 isAnyMoved = rightTurn();
                 break;
+            case DOWN:
             case S:
                 isAnyMoved = downTurn();
                 break;
+            case UP:
             case W:
                 isAnyMoved = upTurn();
                 break;
@@ -174,16 +98,21 @@ public class HelloController implements Initializable {
         }
         List<Tile> emptyTiles = tiles.stream().filter(tile -> tile.getValue() == 0).collect(Collectors.toList());
         if (emptyTiles.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Game over");
-            alert.setHeaderText("No moves left");
-            alert.showAndWait();
+            searchForAnyMoves();
         }
         if (isAnyMoved){
-            emptyTiles
-                    .get(new Random().nextInt(emptyTiles.size()))
-                    .setValue(new Random().nextInt(10) > 8? 4:2);
+            createNewTile(emptyTiles);
         }
+    }
+    private void createNewTile(List<Tile> emptyTiles){
+        Tile newTile = emptyTiles
+                .get(new Random().nextInt(emptyTiles.size()));
+        newTile.setValue(new Random().nextInt(10) > 8? 4:2);
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1.0), newTile);
+        fadeTransition.setFromValue(0.5);
+        fadeTransition.setToValue(1.0);
+        fadeTransition.setCycleCount(1);
+        fadeTransition.play();
     }
     private boolean leftTurn(){
         Tile tile;
@@ -240,14 +169,10 @@ public class HelloController implements Initializable {
                 rightTile = getRight(tile);
                 if (rightTile == null) continue;
                 if (tile.getValue() == rightTile.getValue()){
-                                /*leftTile.doubleValue();
-                                tile.setValue(0);*/
                     moves++;
                     merge(rightTile, tile);
                 }
                 else if(rightTile.getValue() == 0){
-                                /*leftTile.setValue(tile.getValue());
-                                tile.setValue(0);*/
                     moves++;
                     move(rightTile, tile);
                 }
@@ -276,5 +201,88 @@ public class HelloController implements Initializable {
             }
         }
         return moves > 0;
+    }
+    private Tile getTile(int x, int y){
+        return tiles.get(x+y*4);
+    }
+    private Tile getLeft(Tile tile){
+        Tile tempTile;
+        Tile leftTile = null;
+        for (int i = 1; i < tile.getY()+1; i++){
+            tempTile = tiles.get(tile.getPos() - i*4);
+            if (tempTile.getValue() == 0) leftTile = tempTile;
+            else if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
+            else break;
+        }
+        return leftTile;
+    }
+    private Tile getUpper(Tile tile){
+        Tile tempTile;
+        Tile upperTile = null;
+        for (int i = 1; i < tile.getX() + 1; i++){
+            tempTile = tiles.get(tile.getPos() - i);
+            if (tempTile.getValue() == 0) upperTile = tempTile;
+            else if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
+            else break;
+        }
+        return upperTile;
+    }
+    private Tile getLower(Tile tile){
+        Tile tempTile;
+        Tile lowerTile = null;
+        for (int i = 1; i < 4 - tile.getX(); i++){
+            tempTile = tiles.get(tile.getPos() + i);
+            if (tempTile.getValue() == 0) lowerTile = tempTile;
+            else if (tempTile.getValue() == tile.getValue() && !tile.isTileMerged()) return tempTile;
+            else break;
+        }
+        return lowerTile;
+    }
+    private Tile getRight(Tile tile){
+        Tile tempTile;
+        Tile rightTile = null;
+        for (int i = 1; i < 4 -tile.getY(); i++){
+            tempTile = tiles.get(tile.getPos() + i*4);
+            if (tempTile.getValue() == 0) rightTile = tempTile;
+            else if (tempTile.getValue() == tile.getValue() && !tempTile.isTileMerged()) return tempTile;
+            else break;
+        }
+        return rightTile;
+    }
+    private void merge(Tile first, Tile second){
+        first.doubleValue();
+        first.setMerged(true);
+        second.setValue(0);
+    }
+    private void move(Tile first, Tile second){
+        first.setValue(second.getValue());
+        second.setValue(0);
+    }
+    private void gameOverMessage(){
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Game over");
+        alert.setHeaderText("No moves left");
+        alert.showAndWait();
+    }
+    private void searchForAnyMoves(){
+        if (tiles
+                .stream().noneMatch(tile -> hasSameAbove(tile) ||
+                        hasSameAtLeft(tile) ||
+                        hasSameAtRight(tile) ||
+                        hasSameBelow(tile))) {
+            gameOverMessage();
+        }
+    }
+    private boolean hasSameAtRight(Tile tile){
+        return tile.getY() < 3 && tile.getValue() == tiles.get(tile.getPos() + 4).getValue();
+    }
+    private boolean hasSameAtLeft(Tile tile){
+        return tile.getY() > 0 && tile.getValue() == tiles.get(tile.getPos() - 4).getValue();
+    }
+    private boolean hasSameAbove(Tile tile){
+        return tile.getX() > 0 && tile.getValue() == tiles.get(tile.getPos() - 1).getValue();
+    }
+    private boolean hasSameBelow(Tile tile){
+        return tile.getX() < 3 && tile.getValue() == tiles.get(tile.getPos() + 1).getValue();
     }
 }
