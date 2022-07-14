@@ -23,26 +23,18 @@ public class GameController implements Initializable {
     private GridPane grid;
     private List<Tile> tiles;
 
-    @FXML
-    private void hehAction(){
-        Tile tile = (Tile) grid.getChildren().get(12);
-        tile.setValue(2);
-    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         tiles = grid.getChildren().stream().map(node -> (Tile)node).collect(Collectors.toList());
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                grid.requestFocus();
-                Tile tempTile;
-                for (int i = 0; i < 16;i++){
-                    tempTile = tiles.get(i);
-                    tempTile.setX(GridPane.getRowIndex(tempTile));
-                    tempTile.setY(GridPane.getColumnIndex(tempTile));
-                }
-                createNewTile(tiles);
+        Platform.runLater(() -> {
+            grid.requestFocus();
+            Tile tempTile;
+            for (int i = 0; i < 16;i++){
+                tempTile = tiles.get(i);
+                tempTile.setX(GridPane.getRowIndex(tempTile));
+                tempTile.setY(GridPane.getColumnIndex(tempTile));
             }
+            createNewTile(tiles);
         });
         grid.setOnKeyPressed(event -> {
             switch (event.getCode()){
@@ -51,9 +43,6 @@ public class GameController implements Initializable {
                 case S:
                 case W:
                     makeTurn(event);
-                    break;
-                case SPACE:
-                    hehAction();
                     break;
                 case R:
                     resetAction();
@@ -93,9 +82,7 @@ public class GameController implements Initializable {
             default:
                 break;
         }
-        for (Tile tile: tiles){
-            tile.setMerged(false);
-        }
+        tiles.forEach(tile -> tile.setMerged(false));
         List<Tile> emptyTiles = tiles.stream().filter(tile -> tile.getValue() == 0).collect(Collectors.toList());
         if (emptyTiles.isEmpty()){
             searchForAnyMoves();
@@ -107,7 +94,7 @@ public class GameController implements Initializable {
     private void createNewTile(List<Tile> emptyTiles){
         Tile newTile = emptyTiles
                 .get(new Random().nextInt(emptyTiles.size()));
-        newTile.setValue(new Random().nextInt(10) > 8? 4:2);
+        newTile.setValue(new Random().nextInt(10) > 8? 4 : 2);
         FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1.0), newTile);
         fadeTransition.setFromValue(0.5);
         fadeTransition.setToValue(1.0);
